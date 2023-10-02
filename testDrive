@@ -1,0 +1,60 @@
+from battery import SpindlerBattery
+
+def test_spindler_battery_needs_service():
+    # Create a SpindlerBattery instance with initial service date
+    battery = SpindlerBattery()
+    battery.last_service_date = datetime.date(2021, 1, 1)  # Last service date is January 1, 2021
+
+    # Test when service is not needed after two years (new criteria)
+    current_date = datetime.date(2023, 1, 1)
+    assert battery.needs_service(current_date) == False
+
+    # Test when service is needed after three years (new criteria)
+    current_date = datetime.date(2024, 1, 1)
+    assert battery.needs_service(current_date) == True
+from datetime import datetime, timedelta
+
+class SpindlerBattery(Battery):
+    def needs_service(self, current_date):
+        # Calculate the difference between current_date and last_service_date
+        service_interval = timedelta(days=365 * 3)  # Three years
+
+        # Check if the service interval has passed
+        return (current_date - self.last_service_date) >= service_interval
+from car import CarFactory
+
+def test_carrigan_tire_needs_service():
+    # Create a CarFactory instance
+    car_factory = CarFactory()
+
+    # Test Carrigan tires when all tire wear values are below 0.9
+    tire_wear = [0.8, 0.7, 0.85, 0.6]
+    assert car_factory.needs_tire_service('Carrigan', tire_wear) == False
+
+    # Test Carrigan tires when one or more tire wear values are >= 0.9
+    tire_wear = [0.8, 0.95, 0.85, 0.6]
+    assert car_factory.needs_tire_service('Carrigan', tire_wear) == True
+
+def test_octoprime_tire_needs_service():
+    # Create a CarFactory instance
+    car_factory = CarFactory()
+
+    # Test Octoprime tires when the sum of tire wear values is < 3
+    tire_wear = [0.8, 0.7, 0.85, 0.6]
+    assert car_factory.needs_tire_service('Octoprime', tire_wear) == False
+
+    # Test Octoprime tires when the sum of tire wear values is >= 3
+    tire_wear = [1.2, 0.7, 0.85, 0.6]
+    assert car_factory.needs_tire_service('Octoprime', tire_wear) == True
+class CarFactory:
+    # ... (existing methods)
+
+    def needs_tire_service(self, tire_type, tire_wear):
+        if tire_type == 'Carrigan':
+            # Check if any tire wear value is >= 0.9
+            return any(wear >= 0.9 for wear in tire_wear)
+        elif tire_type == 'Octoprime':
+            # Check if the sum of tire wear values is >= 3
+            return sum(tire_wear) >= 3
+        else:
+            raise ValueError("Invalid tire type")
